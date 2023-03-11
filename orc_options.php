@@ -3,7 +3,7 @@
 Plugin Name: Orchard Recovery Center Options
 Plugin URI:
 Description: Optional information used in Orchard Recovery Center website
-Version: 2.0.4
+Version: 3.0.0
 Author: Martin Wedepohl
 Author URI: https://wedepohlengineering.com
 License: GPLv2 or later
@@ -33,14 +33,12 @@ class ORCOptions {
 		register_deactivation_hook( __FILE__, array( $this, 'orc_options_deactivation' ) );
 		add_action( 'theme_prefix_rewrite_flush', array( $this, 'theme_prefix_rewrite_flush' ) );
 
-		add_action( 'orc_options_delete_emails', array( $this, 'orc_options_delete_emails_hook' ) );
-
 		// Enqueue styles and scripts.
 		add_action( 'admin_enqueue_scripts', array( $this, 'orc_options_admin_styles' ) );
 		add_action( 'wp_enqueue_scripts', array( $this, 'orc_options_add_scripts' ) );
 
-		// Add the custom WPBakery code.
-		add_action( 'vc_before_init', array( $this, 'orc_custom_before_init_actions' ) );
+		// Add the custom ORC code.
+		add_action( 'init', array( $this, 'orc_custom_init_actions' ) );
 
 		// Allow widgets to use short codes.
 		add_filter( 'widget_text', 'do_shortcode' );
@@ -71,7 +69,6 @@ class ORCOptions {
 		remove_action( 'wp_head', array( $this, 'feed_links', 2 ) );
 		remove_action( 'wp_head', array( $this, 'feed_links_extra', 3 ) );
 		add_filter( 'em_content', array( $this, 'my_em_custom_content' ) );
-		add_action( 'init', array( $this, 'delete_wpbakery_key' ) );
 
 		Options::initialize();
 		$this->register_settings_page();
@@ -82,10 +79,6 @@ class ORCOptions {
 	 * Enables the cron to delete messages in the flamingo plugin
 	 */
 	public function orc_options_activation() {
-		if ( wp_next_scheduled( 'orc_options_delete_emails' ) ) {
-			wp_clear_scheduled_hook( 'orc_options_delete_emails' );
-		}
-		wp_schedule_event( time(), 'twicedaily', 'orc_options_delete_emails' );
 		flush_rewrite_rules();
 	}
 
@@ -94,8 +87,6 @@ class ORCOptions {
 	 * Turn off the cron to delete messages in the flamingo plugin
 	 */
 	public function orc_options_deactivation() {
-		$timestamp = wp_next_scheduled( 'orc_options_delete_emails' );
-		wp_unschedule_event( $timestamp, 'orc_options_delete_emails' );
 		flush_rewrite_rules();
 	}
 
@@ -104,63 +95,6 @@ class ORCOptions {
 	 */
 	public function theme_prefix_rewrite_flush() {
 		flush_rewrite_rules();
-	}
-
-	/**
-	 * Function to remove messages and users from the flamingo plugin data after a certain amound of days days
-	 */
-	public function orc_options_delete_emails_hook() {
-		global $wpdb;
-
-		// Get the number of days to hold the emails for or 30 days if not set.
-		$orc_options_email_delete_days = get_option( 'orc_options_email_delete_days', 30 );
-
-		/**
-		 * Get an array of ID and post_content
-		 * From the posts table where type post_type is a flamingo_inbound
-		 * with a post_date older than then umber of days set by the plugin
-		 * when the cron starts
-		 */
-		$postdataarray = array();
-		foreach ( $wpdb->get_results( $wpdb->prepare( 'SELECT ID, post_content FROM ' . $wpdb->posts . ' WHERE post_type="flamingo_inbound" AND post_date < DATE(NOW() - INTERVAL %d DAY) + INTERVAL 0 SECOND;', array( $orc_options_email_delete_days ) ) ) as $id => $postid ) {
-			$postdataarray[] = array(
-				'ID'           => $postid->ID,
-				'post_content' => $postid->post_content,
-			);
-		}
-
-		/**
-		 * Loop through all the expired emails stored using Contact Form 7 and Flamingo
-		 */
-		foreach ( $postdataarray as $postid ) {
-			/**
-			 * Get the eamil address from the post_content
-			 */
-			$post_content = $postid['post_content'];
-			preg_match( '/(\b[a-z0-9._%+-]+@[a-z0-9._%+-]+.[a-z0-9._%+-]+\b)/i', $post_content, $email );
-
-			/**
-			 * If we have an email address
-			 * Delete the postmeta and posts with the appropriate ID
-			 */
-			if ( is_array( $email ) ) {
-
-				$wpdb->query( $wpdb->prepare( 'DELETE FROM ' . $wpdb->postmeta . ' WHERE post_id=%d', array( $postid['ID'] ) ) );
-				$wpdb->query( $wpdb->prepare( 'DELETE FROM ' . $wpdb->posts . ' WHERE ID=%d', array( $postid['ID'] ) ) );
-
-				/**
-				 * Don't delete email addresses of loggedin users
-				 * otherwise if there are no more posts from that email address, delete the user
-				 */
-				$isloggedinuser = $wpdb->get_results( $wpdb->prepare( 'SELECT ID FROM ' . $wpdb->users . ' WHERE user_email=%s', array( $email[0] ) ) );
-				if ( ! array_key_exists( 0, $isloggedinuser ) ) {
-					$numposts = $wpdb->get_results( $wpdb->prepare( 'SELECT COUNT(ID) AS numposts FROM ' . $wpdb->posts . ' WHERE post_type="flamingo_inbound" AND post_content LIKE %s', array( '%' . $email[0] . '%' ) ) );
-					if ( 0 === intval( $numposts[0]->numposts ) ) {
-						$wpdb->query( $wpdb->prepare( 'DELETE FROM ' . $wpdb->posts . ' WHERE post_title=%s', array( $email[0] ) ) );
-					}
-				}
-			}
-		}
 	}
 
 	/**
@@ -210,14 +144,12 @@ class ORCOptions {
 		}
 	}
 
-	/**
-	 * Include custom Visual Composer Elements
-	 */
-	public function orc_custom_before_init_actions() {
+	public function orc_custom_init_actions() {
 		require_once plugin_dir_path( __FILE__ ) . 'includes/shortcodes/orc-options-shortcodes.php';
-		require_once plugin_dir_path( __FILE__ ) . 'includes/vc-elements/orc-carousel-elements.php';
-		require_once plugin_dir_path( __FILE__ ) . 'includes/vc-elements/orc-contact-elements.php';
-		require_once plugin_dir_path( __FILE__ ) . 'includes/vc-elements/orc-post-elements.php';
+		require_once plugin_dir_path( __FILE__ ) . 'includes/shortcodes/orc-options-staff-shortcodes.php';
+		// require_once plugin_dir_path( __FILE__ ) . 'includes/vc-elements/orc-carousel-elements.php';
+		// require_once plugin_dir_path( __FILE__ ) . 'includes/vc-elements/orc-contact-elements.php';
+		// require_once plugin_dir_path( __FILE__ ) . 'includes/vc-elements/orc-post-elements.php';
 	}
 
 	/**
@@ -516,24 +448,7 @@ class ORCOptions {
 		// Whatever happens, you must return the $content variable, altered or not.
 		return $content;
 	}
-
-	/**
-	 * Delete the WPBakery Key so it can be added again.
-	 * This is required when restoring the site from the sandbox.
-	 */
-	public function delete_wpbakery_key() {
-		$delete_wp_bakery_key = get_option( 'orc_options_delete_wpb_key' );
-		// Only if called from the page [address of website]/wp-admin/index.php?forcedeactivate.
-		if ( 'DELETE' === $delete_wp_bakery_key && isset( $_GET['forcedeactivate'] ) ) {
-			// Delete the WPBakery Key.
-			delete_option( 'vc_license_activation_key' );
-			delete_option( 'wpb_js_js_composer_purchase_code' );
-			update_option( 'orc_options_delete_wpb_key', '' );
-		}
-	}
-
 }
-
 new ORCOptions();
 
 // Include all the custom post types.

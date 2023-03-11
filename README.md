@@ -4,8 +4,8 @@
 * Contributors: [martinwedepohl](https://en.gravatar.com/martinwedepohl) 
 * Tags: options, orchard recovery center, wedepohl engineering
 * Requires at least: 4.7 or higher
-* Tested up to: 5.9.3
-* Stable tag: 2.0.4
+* Tested up to: 6.1.1
+* Stable tag: 3.0.0
 * License: [GPLv3 or later](https://www.gnu.org/licenses/gpl-3.0.html)
 
 ### Description
@@ -34,6 +34,9 @@ composer dump
 ### Screenshots
 
 ### Changelog
+
+###### 3.0.0 2023-03-10
+* Removed WPBakery Page Builder
 
 ###### 2.0.4 2022-08-08
 * Merge changes from github

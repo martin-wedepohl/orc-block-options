@@ -5,7 +5,7 @@ namespace ORCOptions\Includes;
 defined( 'ABSPATH' ) or die;
 
 class Config {
-	const PLUGIN_VERSION       = '2.0.4';
+	const PLUGIN_VERSION       = '3.0.0';
 	const TEXT_DOMAIN          = 'orc-options';
 	const CAPABILITY           = 'edit_posts';
 	const MENU_SLUG            = 'orc-options';
@@ -35,9 +35,6 @@ class Config {
 	const WEBSITE_ID           = 'orc_options_wpcf7id_website';
 	const PRIVACY_ID           = 'orc_options_wpcf7id_privacy';
 
-	// Number of days to keep emails before automatically deleting them.
-	const DELETE               = 'orc_options_email_delete_days';
-
 	// Videos.
 	const MAIN                 = 'orc_options_mainvideo';
 	const XMAS                 = 'orc_options_xmasvideo';
@@ -62,9 +59,6 @@ class Config {
 	const RECOVERY             = 'orc_options_staff_recovery_excerpt';
 	const SUPPORT              = 'orc_options_staff_support_excerpt';
 	const WELLNESS             = 'orc_options_staff_wellness_excerpt';
-
-	// Debug.
-	const DELETE_WPB_KEY       = 'orc_options_delete_wpb_key';
 
 	public static function getVersion() {
 		return self::PLUGIN_VERSION;

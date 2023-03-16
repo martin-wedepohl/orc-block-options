@@ -146,7 +146,7 @@ class ORCOptions {
 
 	public function orc_custom_init_actions() {
 		require_once plugin_dir_path( __FILE__ ) . 'includes/shortcodes/orc-options-shortcodes.php';
-		require_once plugin_dir_path( __FILE__ ) . 'includes/shortcodes/orc-options-staff-shortcodes.php';
+		// require_once plugin_dir_path( __FILE__ ) . 'includes/shortcodes/orc-options-staff-shortcodes.php';
 		// require_once plugin_dir_path( __FILE__ ) . 'includes/vc-elements/orc-carousel-elements.php';
 		// require_once plugin_dir_path( __FILE__ ) . 'includes/vc-elements/orc-contact-elements.php';
 		// require_once plugin_dir_path( __FILE__ ) . 'includes/vc-elements/orc-post-elements.php';

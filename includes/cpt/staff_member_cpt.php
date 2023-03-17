@@ -6,7 +6,10 @@ defined( 'ABSPATH' ) || die;
 
 use ORCOptions\Includes\Config;
 
-class orcStaffMember {
+/**
+ * Class for the Orchard Recovery Center Staff Members.
+ */
+class OrcStaffMember {
 
 	/**
 	 * Class constructor
@@ -19,8 +22,9 @@ class orcStaffMember {
 		add_action( 'save_post', array( $this, 'save_meta' ), 1, 2 );
 		add_filter( 'single_template', array( $this, 'load_template' ) );
 		add_filter( 'archive_template', array( $this, 'load_archive' ) );
-		add_filter( 'manage_edit-orc_staff_member_columns', array( $this, 'table_head' ) );
+		add_filter( 'manage_orc_staff_member_posts_columns', array( $this, 'table_head' ) );
 		add_action( 'manage_orc_staff_member_posts_custom_column', array( $this, 'table_content' ), 10, 2 );
+		add_filter( 'manage_edit-orc_staff_member_sortable_columns', array( $this, 'sortable_columns' ) );
 		add_shortcode( 'orc_staff', array( $this, 'orc_staff_shortcode' ) );
 	} // __construct
 
@@ -105,13 +109,24 @@ class orcStaffMember {
 		// Get the staff information if it's already entered.
 		$position       = get_post_meta( $post->ID, 'position', true );
 		$qualifications = get_post_meta( $post->ID, 'qualifications', true );
+		$display_order  = get_post_meta( $post->ID, 'display_order', true );
 		$on_home_page   = get_post_meta( $post->ID, 'on_home_page', true );
 
-		// Output the fields.
-		echo '<label for="position">Job Title: </label><input type="text" id="position" name="position" required value="' . sanitize_text_field( $position ) . '" class="widefat">';
-		echo '<label for="qualifications">Qualifications: </label><input type="text" id="qualifications" name="qualifications" value="' . sanitize_text_field( $qualifications ) . '" class="widefat">';
-		echo '<label for="on_home_page">Show On Home Page: </label><input type="checkbox" id="on_home_page" name="on_home_page" value="1" ' . ( '1' === sanitize_text_field( $on_home_page ) ? 'checked' : '' ) . '>';
+		if ( '' === $display_order ) {
+			$display_order = '0';
+		}
 
+		// Output the fields.
+		?>
+		<label for="position">Job Title: </label>
+		<input type="text" id="position" name="position" required value="<?php echo sanitize_text_field( $position ); ?>" class="widefat">
+		<label for="qualifications">Qualifications: </label>
+		<input type="text" id="qualifications" name="qualifications" value="<?php echo sanitize_text_field( $qualifications ); ?>" class="widefat">
+		<label for="display_order">Display Order: </label>
+		<input type="number" id="display_order" name="display_order" required value="<?php echo sanitize_text_field( $display_order ); ?>" class="widefat">
+		<label for="on_home_page">Show On Home Page: </label>
+		<input type="checkbox" id="on_home_page" name="on_home_page" value="1" <?php echo '1' === sanitize_text_field( $on_home_page ) ? 'checked' : ''; ?>>
+		<?php
 	} // meta_box
 
 	/**
@@ -178,7 +193,12 @@ class orcStaffMember {
 		$staff_meta                   = array();
 		$staff_meta['position']       = isset( $_POST['position'] ) ? sanitize_text_field( $_POST['position'] ) : '';
 		$staff_meta['qualifications'] = isset( $_POST['qualifications'] ) ? sanitize_text_field( $_POST['qualifications'] ) : '';
+		$staff_meta['display_order']  = isset( $_POST['display_order'] ) ? sanitize_text_field( $_POST['display_order'] ) : '0';
 		$staff_meta['on_home_page']   = isset( $_POST['on_home_page'] ) ? sanitize_text_field( $_POST['on_home_page'] ) : '0';
+
+		if ( '' === $staff_meta['display_order'] ) {
+			$staff_meta['display_order'] = '0';
+		}
 
 		// Cycle through the $events_meta array.
 		foreach ( $staff_meta as $key => $value ) {
@@ -189,13 +209,13 @@ class orcStaffMember {
 			} else {
 				// If the custom field doesn't have a value, add it.
 				add_post_meta( $post_id, $key, $value );
-			} // if
+			}
 
 			if ( ! $value ) {
 				// Delete the meta key if there's no value.
 				delete_post_meta( $post_id, $key );
-			} // if( !$value)
-		} // foreach
+			}
+		}
 
 	} // save_meta
 
@@ -309,6 +329,7 @@ class orcStaffMember {
 		// Our custom meta data columns.
 		$newcols['position']       = 'Position';
 		$newcols['qualifications'] = 'Qualifications';
+		$newcols['display_order']  = 'Display Order';
 		$newcols['on_home_page']   = 'Show On Home Page?';
 
 		// Want date last.
@@ -324,7 +345,7 @@ class orcStaffMember {
 
 		return $newcols;
 
-	} // table_head
+	} // table_head.
 
 	/**
 	 * Display the meta data associated with a post on the administration table.
@@ -342,6 +363,10 @@ class orcStaffMember {
 			$qualifications = get_post_meta( $post_id, 'qualifications', true );
 			echo $qualifications;
 		}
+		if ( 'display_order' === $column_name ) {
+			$display_order = get_post_meta( $post_id, 'display_order', true );
+			echo $display_order;
+		}
 		if ( 'on_home_page' === $column_name ) {
 			$on_home_page = get_post_meta( $post_id, 'on_home_page', true );
 			$on_home_page = ( strlen( $on_home_page ) > 0 ) ? 'YES' : '';
@@ -349,44 +374,66 @@ class orcStaffMember {
 		}
 
 	} // table_content
+	
+	/**
+	 * Make columns in admin page sortable.
+	 */
+	public function sortable_columns( $columns ) {
+		$columns['display_order'] = 'display_order';
+		return $columns;
+	}
 
 	/**
 	 * Shortcode to display the staff.
 	 *
-	 * @param array $atts     Attributes for the shortcode.
+	 * @param array  $atts     Attributes for the shortcode.
 	 * @param string $content The content for the shortcode.
 	 *
 	 * @return string HTML content result for the shortcode.
 	 */
 	public function orc_staff_shortcode( $atts, $content = null ) {
 
-		extract(
-			shortcode_atts(
-				array(
-					'postid'   => null,
-					'homepage' => null,
-				),
-				$atts
-			)
-		);
+		$postid   = isset( $atts['postid'] ) ? $atts['postid'] : null;
+		$homepage = isset( $atts['homepage'] ) ? $atts['homepage'] : null;
 
 		if ( $homepage ) {
 			$args = array(
 				'post_type'      => 'orc_staff_member',
-				'orderby'        => 'menu_order',
-				'order'          => 'ASC',
 				'posts_per_page' => -1,
-				'meta_key'       => 'on_home_page',
-				'meta_value'     => '1',
+				'meta_query'     => array(
+					'display_order_clause' => array(
+						'key'  => 'display_order',
+						'type' => 'numeric',
+					),
+					'home_page_clause'     => array(
+						'key'        => 'on_home_page',
+						'meta_value' => '1',
+					),
+				),
+				'orderby'        => array(
+					'home_page_clause'     => 'ASC',
+					'display_order_clause' => 'ASC',
+					'title'                => 'ASC',
+				),
+
 			);
 		} else {
 			$args = array(
 				'post_type'      => 'orc_staff_member',
-				'orderby'        => 'menu_order',
-				'order'          => 'ASC',
+				'orderby'        => array(
+					'display_order_clause' => 'ASC',
+					'title'                => 'ASC',
+				),
 				'posts_per_page' => -1,
+				'meta_query'     => array(
+					'display_order_clause' => array(
+						'key'  => 'display_order',
+						'type' => 'numeric',
+					),
+				),
 			);
 		}
+
 		$the_query = new \WP_Query( $args );
 		$data      = array();
 		if ( $the_query->have_posts() ) {
@@ -454,6 +501,10 @@ class orcStaffMember {
 		}
 		wp_reset_postdata();
 
+		if ( 0 === count( $data ) ) {
+			return '<div class="staff-members">No Staff Found</div>';
+		}
+
 		$retstr = '<div class="staff-members" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1em">';
 		foreach ( $data as $staff ) {
 			$retstr .= "<div class='staff-member' style='display: flex; flex-wrap: wrap; flex-direction: column; align-items: center; text-align: center'><a href=\"{$staff['permalink']}\">{$staff['name']}</a>";
@@ -470,6 +521,6 @@ class orcStaffMember {
 		return $retstr;
 	}
 
-} // orcStaffMember
+} // OrcStaffMember
 
-new orcStaffMember();
+new OrcStaffMember();

@@ -20,11 +20,15 @@ class OrcStaffMember {
 		add_action( 'init', array( $this, 'register_cpt' ) );
 		add_action( 'init', array( $this, 'register_taxonomies' ), 0 );
 		add_action( 'save_post', array( $this, 'save_meta' ), 1, 2 );
+		add_action( 'save_post', array( $this, 'save_inline' ) );
 		add_filter( 'single_template', array( $this, 'load_template' ) );
 		add_filter( 'archive_template', array( $this, 'load_archive' ) );
 		add_filter( 'manage_orc_staff_member_posts_columns', array( $this, 'table_head' ) );
 		add_action( 'manage_orc_staff_member_posts_custom_column', array( $this, 'table_content' ), 10, 2 );
 		add_filter( 'manage_edit-orc_staff_member_sortable_columns', array( $this, 'sortable_columns' ) );
+		add_action( 'pre_get_posts', array( $this, 'posts_orderby' ) );
+		add_action( 'quick_edit_custom_box', array( $this, 'quick_edit' ), 10, 2 );
+		add_action( 'admin_enqueue_scripts', array( $this, 'add_js' ) );
 		add_shortcode( 'orc_staff', array( $this, 'orc_staff_shortcode' ) );
 	} // __construct
 
@@ -200,6 +204,10 @@ class OrcStaffMember {
 			$staff_meta['display_order'] = '0';
 		}
 
+		if ( '' === $staff_meta['on_home_page'] ) {
+			$staff_meta['on_home_page'] = '0';
+		}
+
 		// Cycle through the $events_meta array.
 		foreach ( $staff_meta as $key => $value ) {
 			// Don't store custom data twice.
@@ -218,6 +226,30 @@ class OrcStaffMember {
 		}
 
 	} // save_meta
+
+	public function save_inline( $post_id ) {
+		// Check inline edit nonce
+		if ( ! wp_verify_nonce( $_POST[ '_inline_edit' ], 'inlineeditnonce' ) ) {
+			return;
+		}
+
+		// update the position
+		$position = ! empty( $_POST[ 'position' ] ) ? sanitize_text_field( $_POST['position'] ) : '';
+		update_post_meta( $post_id, 'position', $position );
+
+		// update the position
+		$qualifications = ! empty( $_POST[ 'qualifications' ] ) ? sanitize_text_field( $_POST['qualifications'] ) : '';
+		update_post_meta( $post_id, 'qualifications', $qualifications );
+
+		// update the display_order
+		$display_order = ! empty( $_POST[ 'display_order' ] ) ? sanitize_text_field( $_POST['display_order'] ) : '';
+		update_post_meta( $post_id, 'display_order', $display_order );
+
+		// update checkbox
+		$on_home_page = ( isset( $_POST[ 'on_home_page' ] ) && '1' == $_POST[ 'on_home_page' ] ) ? '1' : '0';
+		update_post_meta( $post_id, 'on_home_page', $on_home_page );
+
+	} // save_inline
 
 	/**
 	 * Load the single post template with the following order:
@@ -374,13 +406,142 @@ class OrcStaffMember {
 		}
 
 	} // table_content
-	
+
 	/**
 	 * Make columns in admin page sortable.
+	 *
+	 * @param array $columns The columns array.
 	 */
 	public function sortable_columns( $columns ) {
 		$columns['display_order'] = 'display_order';
+		$columns['on_home_page']  = 'on_home_page';
 		return $columns;
+	}
+
+	/**
+	 * Sort the posts by custom fields order.
+	 *
+	 * @param object $query The database query.
+	 */
+	public function posts_orderby( $query ) {
+		if ( ! is_admin() || ! $query->is_main_query() ) {
+			return;
+		}
+
+		// if ( 'display_order' === $query->get( 'orderby' ) ) {
+		// $query->set( 'orderby', 'meta_value' );
+		// $query->set( 'meta_key', 'display_order' );
+		// $query->set( 'meta_type', 'numeric' );
+		// }
+
+		if ( 'display_order' === $query->get( 'orderby' ) ) {
+			$query->set(
+				'meta_query',
+				array(
+					'relation' => 'OR',
+					array(
+						'key'  => 'display_order',
+						'type' => 'numeric',
+					),
+					array(
+						'key'     => 'display_order',
+						'compare' => 'NOT EXISTS',
+						'value'   => 'null',
+					),
+				),
+			);
+		}
+
+		if ( 'on_home_page' === $query->get( 'orderby' ) ) {
+			$query->set(
+				'meta_query',
+				array(
+					'relation' => 'OR',
+					array(
+						'key'  => 'on_home_page',
+						'type' => 'numeric',
+					),
+					array(
+						'key'     => 'on_home_page',
+						'compare' => 'NOT EXISTS',
+						'value'   => 'null',
+					),
+				),
+			);
+		}
+	}
+
+	/**
+	 * Adds custom variables to the quick edit box.
+	 *
+	 * @param string $column_name The name of the column to add.
+	 * @param string $post_type   The type of the post.
+	 */
+	public function quick_edit( $column_name, $post_type ) {
+
+		switch ( $column_name ) {
+			case 'position': {
+				?>
+					<fieldset class="inline-edit-col-left">
+						<div class="inline-edit-col">
+							<label>
+								<span class="title">Position</span>
+								<span class="input-text-wrap">
+									<input type="text" name="position">
+								</span>
+							</label>
+						</div>
+					<?php
+					break;
+			}
+			case 'qualifications': {
+				?>
+						<div class="inline-edit-col">
+							<label>
+								<span class="title">Qualifications</span>
+								<span class="input-text-wrap">
+									<input type="text" name="qualifications">
+								</span>
+							</label>
+						</div>
+					<?php
+					break;
+			}
+			case 'display_order': {
+				?>
+						<div class="inline-edit-col">
+							<label>
+								<span class="title">Display Order</span>
+								<input type="numeric" name="display_order">
+							</label>
+						</div>
+					<?php
+					break;
+			}
+			case 'on_home_page': {
+				?>
+						<div class="inline-edit-col">
+							<label>
+								<input type="checkbox" value="1" name="on_home_page"> On Home Page?
+							</label>
+						</div>
+					</fieldset>
+				<?php
+				break;
+			}
+		}
+	}
+
+	public function add_js( $page ) {
+		var_dump('************** IN add_js **************');
+		// Are we editing 
+		if ( 'edit.php' !== $page ) {
+			return;
+		}
+		
+		var_dump('************** ABOUT TO enque **************');
+		var_dump('**************' . WP_PLUGIN_DIR . '/orc-options/dist/js/orc_staff_member.js ***********');
+		wp_enqueue_script( 'custom-quickedit-box', WP_PLUGIN_DIR . '/orc-options/dist/js/orc_staff_members.js', array( 'jquery','inline-edit-post' ) ); 
 	}
 
 	/**

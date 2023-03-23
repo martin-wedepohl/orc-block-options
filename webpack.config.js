@@ -18,6 +18,7 @@ const entryPoints = {
 	'orc.carousels.min': jsPath + '/orc.carousels.js',
 	'orc.contacthandler.min': jsPath + '/orc.contacthandler.js',
 	'orc.staff.min': jsPath + '/orc.staff.js',
+	'orc.staff-admin.min': jsPath + '/orc.staff-admin.js',
 	'orc_staff.min': cssPath + '/orc_staff.scss',
 	'orc.videos.min': jsPath + '/orc.videos.js',
 	'orc_videos.min': cssPath + '/orc_videos.scss',

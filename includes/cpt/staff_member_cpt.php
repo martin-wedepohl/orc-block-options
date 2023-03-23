@@ -127,7 +127,7 @@ class OrcStaffMember {
 		<label for="qualifications">Qualifications: </label>
 		<input type="text" id="qualifications" name="qualifications" value="<?php echo sanitize_text_field( $qualifications ); ?>" class="widefat">
 		<label for="display_order">Display Order: </label>
-		<input type="number" id="display_order" name="display_order" required value="<?php echo sanitize_text_field( $display_order ); ?>" class="widefat">
+		<input type="number" id="display_order" name="display_order" required value="<?php echo sanitize_text_field( $display_order ); ?>" class="widefat" minimum="0">
 		<label for="on_home_page">Show On Home Page: </label>
 		<input type="checkbox" id="on_home_page" name="on_home_page" value="1" <?php echo '1' === sanitize_text_field( $on_home_page ) ? 'checked' : ''; ?>>
 		<?php
@@ -227,26 +227,31 @@ class OrcStaffMember {
 
 	} // save_meta
 
+	/**
+	 * Save the quick edit data.
+	 *
+	 * @param int $post_id The ID of the post.
+	 */
 	public function save_inline( $post_id ) {
 		// Check inline edit nonce
-		if ( ! wp_verify_nonce( $_POST[ '_inline_edit' ], 'inlineeditnonce' ) ) {
+		if ( ! wp_verify_nonce( $_POST['_inline_edit'], 'inlineeditnonce' ) ) {
 			return;
 		}
 
-		// update the position
-		$position = ! empty( $_POST[ 'position' ] ) ? sanitize_text_field( $_POST['position'] ) : '';
+		// update the position.
+		$position = ! empty( $_POST['position'] ) ? sanitize_text_field( $_POST['position'] ) : '';
 		update_post_meta( $post_id, 'position', $position );
 
-		// update the position
-		$qualifications = ! empty( $_POST[ 'qualifications' ] ) ? sanitize_text_field( $_POST['qualifications'] ) : '';
+		// update the position.
+		$qualifications = ! empty( $_POST['qualifications'] ) ? sanitize_text_field( $_POST['qualifications'] ) : '';
 		update_post_meta( $post_id, 'qualifications', $qualifications );
 
-		// update the display_order
-		$display_order = ! empty( $_POST[ 'display_order' ] ) ? sanitize_text_field( $_POST['display_order'] ) : '';
+		// update the display_order.
+		$display_order = ! empty( $_POST['display_order'] ) ? sanitize_text_field( $_POST['display_order'] ) : '';
 		update_post_meta( $post_id, 'display_order', $display_order );
 
-		// update checkbox
-		$on_home_page = ( isset( $_POST[ 'on_home_page' ] ) && '1' == $_POST[ 'on_home_page' ] ) ? '1' : '0';
+		// update checkbox.
+		$on_home_page = ( isset( $_POST['on_home_page'] ) && '1' == $_POST['on_home_page'] ) ? '1' : '0';
 		update_post_meta( $post_id, 'on_home_page', $on_home_page );
 
 	} // save_inline
@@ -397,11 +402,14 @@ class OrcStaffMember {
 		}
 		if ( 'display_order' === $column_name ) {
 			$display_order = get_post_meta( $post_id, 'display_order', true );
+			if ( '' === $display_order ) {
+				$display_order = '0';
+			}
 			echo $display_order;
 		}
 		if ( 'on_home_page' === $column_name ) {
-			$on_home_page = get_post_meta( $post_id, 'on_home_page', true );
-			$on_home_page = ( strlen( $on_home_page ) > 0 ) ? 'YES' : '';
+			$on_home_page = intval( get_post_meta( $post_id, 'on_home_page', true ) );
+			$on_home_page = 1 === $on_home_page ? 'YES' : 'no';
 			echo $on_home_page;
 		}
 
@@ -428,46 +436,14 @@ class OrcStaffMember {
 			return;
 		}
 
-		// if ( 'display_order' === $query->get( 'orderby' ) ) {
-		// $query->set( 'orderby', 'meta_value' );
-		// $query->set( 'meta_key', 'display_order' );
-		// $query->set( 'meta_type', 'numeric' );
-		// }
-
 		if ( 'display_order' === $query->get( 'orderby' ) ) {
-			$query->set(
-				'meta_query',
-				array(
-					'relation' => 'OR',
-					array(
-						'key'  => 'display_order',
-						'type' => 'numeric',
-					),
-					array(
-						'key'     => 'display_order',
-						'compare' => 'NOT EXISTS',
-						'value'   => 'null',
-					),
-				),
-			);
+			$query->set( 'meta_key', 'display_order' );
+			$query->set( 'meta_type', 'numeric' );
 		}
 
 		if ( 'on_home_page' === $query->get( 'orderby' ) ) {
-			$query->set(
-				'meta_query',
-				array(
-					'relation' => 'OR',
-					array(
-						'key'  => 'on_home_page',
-						'type' => 'numeric',
-					),
-					array(
-						'key'     => 'on_home_page',
-						'compare' => 'NOT EXISTS',
-						'value'   => 'null',
-					),
-				),
-			);
+			$query->set( 'meta_key', 'on_home_page' );
+			$query->set( 'meta_type', 'numeric' );
 		}
 	}
 
@@ -482,66 +458,71 @@ class OrcStaffMember {
 		switch ( $column_name ) {
 			case 'position': {
 				?>
-					<fieldset class="inline-edit-col-left">
-						<div class="inline-edit-col">
-							<label>
-								<span class="title">Position</span>
-								<span class="input-text-wrap">
-									<input type="text" name="position">
-								</span>
-							</label>
-						</div>
-					<?php
-					break;
+				<fieldset class="inline-edit-col-left">
+					<div class="inline-edit-col">
+						<label>
+							<span class="title">Position</span>
+							<span class="input-text-wrap">
+								<input type="text" name="position">
+							</span>
+						</label>
+					</div>
+				<?php
+				break;
 			}
 			case 'qualifications': {
 				?>
-						<div class="inline-edit-col">
-							<label>
-								<span class="title">Qualifications</span>
-								<span class="input-text-wrap">
-									<input type="text" name="qualifications">
-								</span>
-							</label>
-						</div>
-					<?php
-					break;
+					<div class="inline-edit-col">
+						<label>
+							<span class="title">Qualifications</span>
+							<span class="input-text-wrap">
+								<input type="text" name="qualifications">
+							</span>
+						</label>
+					</div>
+				<?php
+				break;
 			}
 			case 'display_order': {
 				?>
-						<div class="inline-edit-col">
-							<label>
-								<span class="title">Display Order</span>
-								<input type="numeric" name="display_order">
-							</label>
-						</div>
-					<?php
-					break;
+					<div class="inline-edit-col">
+						<label>
+							<span class="title">Display Order</span>
+							<input type="number" min="0" name="display_order">
+						</label>
+					</div>
+				<?php
+				break;
 			}
 			case 'on_home_page': {
 				?>
-						<div class="inline-edit-col">
-							<label>
-								<input type="checkbox" value="1" name="on_home_page"> On Home Page?
-							</label>
-						</div>
-					</fieldset>
+					<div class="inline-edit-col">
+						<label>
+							<input type="checkbox" value="1" name="on_home_page"> On Home Page?
+						</label>
+					</div>
+				</fieldset>
 				<?php
 				break;
 			}
 		}
 	}
 
+	/**
+	 * Add javascript for the queick editing.
+	 *
+	 * @param string $page The page executing.
+	 */
 	public function add_js( $page ) {
-		var_dump('************** IN add_js **************');
-		// Are we editing 
+		// Are we editing
 		if ( 'edit.php' !== $page ) {
 			return;
 		}
-		
-		var_dump('************** ABOUT TO enque **************');
-		var_dump('**************' . WP_PLUGIN_DIR . '/orc-options/dist/js/orc_staff_member.js ***********');
-		wp_enqueue_script( 'custom-quickedit-box', WP_PLUGIN_DIR . '/orc-options/dist/js/orc_staff_members.js', array( 'jquery','inline-edit-post' ) ); 
+
+		$full_path = plugins_url() . '/orc-options/dist/js/orc.staff-admin.min.js';
+		$siteurl   = get_option( 'siteurl' );
+		$script    = str_replace( $siteurl, '', $full_path );
+		wp_enqueue_script( 'custom-quickedit-box', $script, array( 'jquery', 'inline-edit-post' ), Config::getVersion(), true );
 	}
 
 	/**

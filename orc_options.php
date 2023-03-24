@@ -452,4 +452,6 @@ class ORCOptions {
 new ORCOptions();
 
 // Include all the custom post types.
-require_once plugin_dir_path( __FILE__ ) . 'includes/cpt/staff_member_cpt.php';
+require_once plugin_dir_path( __FILE__ ) . 'includes/cpt/class-orcstaffmember.php';
+require_once plugin_dir_path( __FILE__ ) . 'includes/cpt/class-orctour.php';
+require_once plugin_dir_path( __FILE__ ) . 'includes/cpt/class-orcvideo.php';

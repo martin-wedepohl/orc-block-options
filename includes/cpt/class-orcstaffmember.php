@@ -1,4 +1,9 @@
 <?php
+/**
+ * Class for the Orchard Recovery Center Staff Members.
+ *
+ * @package ORC_Block_Options
+ */
 
 namespace ORCOptions\Includes\CPT;
 
@@ -94,7 +99,7 @@ class OrcStaffMember {
 	 */
 	public function register_meta_box() {
 
-		add_meta_box( 'orc_staff_data', 'Staff Information', array( $this, 'meta_box' ), 'orc_staff_member', 'normal', 'high' );
+		add_meta_box( 'orc_staff_data', 'Staff Information', array( $this, 'meta_box' ), 'orc_staff_member', 'side', 'high' );
 
 	} // register_meta_box
 
@@ -111,25 +116,24 @@ class OrcStaffMember {
 		wp_nonce_field( basename( __FILE__ ), 'orc_staff_data' );
 
 		// Get the staff information if it's already entered.
-		$position       = get_post_meta( $post->ID, 'position', true );
-		$qualifications = get_post_meta( $post->ID, 'qualifications', true );
-		$display_order  = get_post_meta( $post->ID, 'display_order', true );
-		$on_home_page   = get_post_meta( $post->ID, 'on_home_page', true );
+		$position       = sanitize_text_field( get_post_meta( $post->ID, 'position', true ) );
+		$qualifications = sanitize_text_field( get_post_meta( $post->ID, 'qualifications', true ) );
+		$display_order  = sanitize_text_field( get_post_meta( $post->ID, 'display_order', true ) );
+		$on_home_page   = sanitize_text_field( get_post_meta( $post->ID, 'on_home_page', true ) );
 
-		if ( '' === $display_order ) {
-			$display_order = '0';
-		}
+		$display_order = '' === $display_order ? '0' : $display_order;
+		$checked       = '1' === $on_home_page ? 'checked' : '';
 
 		// Output the fields.
 		?>
 		<label for="position">Job Title: </label>
-		<input type="text" id="position" name="position" required value="<?php echo sanitize_text_field( $position ); ?>" class="widefat">
+		<input type="text" id="position" name="position" required value="<?php echo esc_html( $position ); ?>" class="widefat">
 		<label for="qualifications">Qualifications: </label>
-		<input type="text" id="qualifications" name="qualifications" value="<?php echo sanitize_text_field( $qualifications ); ?>" class="widefat">
+		<input type="text" id="qualifications" name="qualifications" value="<?php echo esc_html( $qualifications ); ?>" class="widefat">
 		<label for="display_order">Display Order: </label>
-		<input type="number" id="display_order" name="display_order" required value="<?php echo sanitize_text_field( $display_order ); ?>" class="widefat" minimum="0">
+		<input type="number" id="display_order" name="display_order" min="0" required value="<?php echo esc_html( $display_order ); ?>" class="widefat" minimum="0">
 		<label for="on_home_page">Show On Home Page: </label>
-		<input type="checkbox" id="on_home_page" name="on_home_page" value="1" <?php echo '1' === sanitize_text_field( $on_home_page ) ? 'checked' : ''; ?>>
+		<input type="checkbox" id="on_home_page" name="on_home_page" value="1" <?php echo '1' === $on_home_page ? 'checked' : ''; ?>>
 		<?php
 	} // meta_box
 
@@ -233,7 +237,7 @@ class OrcStaffMember {
 	 * @param int $post_id The ID of the post.
 	 */
 	public function save_inline( $post_id ) {
-		// Check inline edit nonce
+		// Check inline edit nonce.
 		if ( ! wp_verify_nonce( $_POST['_inline_edit'], 'inlineeditnonce' ) ) {
 			return;
 		}
@@ -251,7 +255,7 @@ class OrcStaffMember {
 		update_post_meta( $post_id, 'display_order', $display_order );
 
 		// update checkbox.
-		$on_home_page = ( isset( $_POST['on_home_page'] ) && '1' == $_POST['on_home_page'] ) ? '1' : '0';
+		$on_home_page = ( isset( $_POST['on_home_page'] ) && '1' === $_POST['on_home_page'] ) ? '1' : '0';
 		update_post_meta( $post_id, 'on_home_page', $on_home_page );
 
 	} // save_inline
@@ -394,23 +398,23 @@ class OrcStaffMember {
 
 		if ( 'position' === $column_name ) {
 			$position = get_post_meta( $post_id, 'position', true );
-			echo $position;
+			echo esc_html( $position );
 		}
 		if ( 'qualifications' === $column_name ) {
 			$qualifications = get_post_meta( $post_id, 'qualifications', true );
-			echo $qualifications;
+			echo esc_html( $qualifications );
 		}
 		if ( 'display_order' === $column_name ) {
 			$display_order = get_post_meta( $post_id, 'display_order', true );
 			if ( '' === $display_order ) {
 				$display_order = '0';
 			}
-			echo $display_order;
+			echo esc_html( $display_order );
 		}
 		if ( 'on_home_page' === $column_name ) {
 			$on_home_page = intval( get_post_meta( $post_id, 'on_home_page', true ) );
 			$on_home_page = 1 === $on_home_page ? 'YES' : 'no';
-			echo $on_home_page;
+			echo esc_html( $on_home_page );
 		}
 
 	} // table_content
@@ -437,13 +441,52 @@ class OrcStaffMember {
 		}
 
 		if ( 'display_order' === $query->get( 'orderby' ) ) {
-			$query->set( 'meta_key', 'display_order' );
-			$query->set( 'meta_type', 'numeric' );
+			$order_direction = $query->get( 'order' );
+			$query->set(
+				'meta_query',
+				array(
+					'staff_clause' => array(
+						'key'  => 'display_order',
+						'type' => 'numeric',
+					),
+				)
+			);
+			$query->set(
+				'orderby',
+				array(
+					'staff_clause' => $order_direction,
+					'title'        => 'ASC',
+				)
+			);
 		}
 
+		/*
+		 * If ordering by on home page.
+		 * Sort first by on home page, then by display order ascending.
+		 */
 		if ( 'on_home_page' === $query->get( 'orderby' ) ) {
-			$query->set( 'meta_key', 'on_home_page' );
-			$query->set( 'meta_type', 'numeric' );
+			$order_direction = $query->get( 'order' );
+			$query->set(
+				'meta_query',
+				array(
+					'home_clause'  => array(
+						'key'  => 'on_home_page',
+						'type' => 'numeric',
+					),
+					'staff_clause' => array(
+						'key'  => 'display_order',
+						'type' => 'numeric',
+					),
+				)
+			);
+			$query->set(
+				'orderby',
+				array(
+					'home_clause'  => $order_direction,
+					'staff_clause' => 'ASC',
+					'title'        => 'ASC',
+				)
+			);
 		}
 	}
 
@@ -455,10 +498,17 @@ class OrcStaffMember {
 	 */
 	public function quick_edit( $column_name, $post_type ) {
 
+        // Are we on the Staff Members page.
+        if ( 'orc_staff_member' !== $post_type ) {
+            return;
+        }
+
 		switch ( $column_name ) {
 			case 'position': {
 				?>
-				<fieldset class="inline-edit-col-left">
+                <div style="clear:both;">Custom Fields</div>
+                <hr style="border: 1px solid #eee;">
+                <fieldset class="inline-edit-col-left" style="clear:both;">
 					<div class="inline-edit-col">
 						<label>
 							<span class="title">Position</span>
@@ -487,14 +537,14 @@ class OrcStaffMember {
 				?>
 					<div class="inline-edit-col">
 						<label>
-							<span class="title">Display Order</span>
+							<span>Display Order</span>
 							<input type="number" min="0" name="display_order">
 						</label>
 					</div>
 				<?php
 				break;
 			}
-			case 'on_home_page': {
+			case 'on_home_page' : {
 				?>
 					<div class="inline-edit-col">
 						<label>
@@ -509,13 +559,13 @@ class OrcStaffMember {
 	}
 
 	/**
-	 * Add javascript for the queick editing.
+	 * Add javascript for the quick editing.
 	 *
 	 * @param string $page The page executing.
 	 */
 	public function add_js( $page ) {
-		// Are we editing
-		if ( 'edit.php' !== $page ) {
+        $post_type = get_post_type();
+		if ( 'edit.php' !== $page || 'orc_staff_member' !== $post_type ) {
 			return;
 		}
 
@@ -581,9 +631,9 @@ class OrcStaffMember {
 		if ( $the_query->have_posts() ) {
 			while ( $the_query->have_posts() ) {
 				$the_query->the_post();
-				$taxonomy_str       = '';
-				$taxonomies         = get_object_taxonomies( 'orc_staff_member' );
-					$taxonomy_names = wp_get_object_terms( get_the_ID(), $taxonomies, array( 'fields' => 'names' ) );
+				$taxonomy_str   = '';
+				$taxonomies     = get_object_taxonomies( 'orc_staff_member' );
+				$taxonomy_names = wp_get_object_terms( get_the_ID(), $taxonomies, array( 'fields' => 'names' ) );
 				if ( ! empty( $taxonomy_names ) ) {
 					foreach ( $taxonomy_names as $tax_name ) {
 						$taxonomy_str .= ',' . $tax_name;

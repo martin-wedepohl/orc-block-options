@@ -34,27 +34,12 @@
             $('label.inline-edit-author', editRow).hide();
         }
 
-        // populate custom meta value
-        if ($(':input[name="position"]', editRow).length === 1) {
-            $(':input[name="position"]', editRow).val($('#post-' + id + ' .position').text());
-        }
-
-        if ($(':input[name="qualifications"]', editRow).length === 1) {
-            $(':input[name="qualifications"]', editRow).val($('#post-' + id + ' .qualifications').text());
-        }
-
         if ($(':input[name="display_order"]', editRow).length === 1) {
             var displayOrder = $('#post-' + id + ' .display_order').text();
             if ('' === displayOrder) {
                 displayOrder = '0';
             }
             $(':input[name="display_order"]', editRow).val(displayOrder);
-        }
-
-        if ($(':input[name="on_home_page"]', editRow).length === 1) {
-            var checked = $('#post-' + id + ' .on_home_page').text();
-            checked = ('YES' === checked) ? true : false; 
-            $(':input[name="on_home_page"]', editRow).prop("checked", checked);
         }
 
         for (f = 0; f < fields.length; f++) {

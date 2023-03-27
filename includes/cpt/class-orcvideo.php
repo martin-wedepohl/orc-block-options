@@ -14,8 +14,8 @@ use ORCOptions\Includes\Config;
 /**
  * Class for the Orchard Recovery Center Videos.
  */
-class OrcVideo
- {
+class OrcVideo {
+
 
 	/**
 	 * Class constructor
@@ -78,7 +78,7 @@ class OrcVideo
 			'show_in_rest'         => true,
 			'query_var'            => false,
 			'rewrite'              => array(
-				'slug'       => 'video',
+				'slug'       => 'videos',
 				'with_front' => true,
 			),
 			'capability_type'      => 'post',
@@ -172,7 +172,7 @@ class OrcVideo
 				add_post_meta( $post_id, $key, $value );
 			}
 
-			if ( ! $value ) {
+			if ( '' === $value ) {
 				// Delete the meta key if there's no value.
 				delete_post_meta( $post_id, $key );
 			}
@@ -310,7 +310,7 @@ class OrcVideo
 
 		// Our custom meta data columns.
 		$newcols['url']           = 'URL';
-		$newcols['display_order']  = 'Display Order';
+		$newcols['display_order'] = 'Display Order';
 
 		// Want date last.
 		unset( $columns['date'] );
@@ -385,7 +385,7 @@ class OrcVideo
 				'orderby',
 				array(
 					'display_clause' => $order_direction,
-					'title'        => 'ASC',
+					'title'          => 'ASC',
 				)
 			);
 		}
@@ -399,17 +399,17 @@ class OrcVideo
 	 */
 	public function quick_edit( $column_name, $post_type ) {
 
-        // Are we on the Video page.
-        if ( 'orc_video' !== $post_type ) {
-            return;
-        }
+		// Are we on the Video page.
+		if ( 'orc_video' !== $post_type ) {
+			return;
+		}
 
 		switch ( $column_name ) {
 			case 'url': {
 				?>
-                <div style="clear:both;">Custom Fields</div>
-                <hr style="border: 1px solid #eee;">
-                <fieldset class="inline-edit-col-left" style="clear:both;">
+				<div style="clear:both;">Custom Fields</div>
+				<hr style="border: 1px solid #eee;">
+				<fieldset class="inline-edit-col-left" style="clear:both;">
 					<div class="inline-edit-col">
 						<label>
 							<span class="title">URL</span>
@@ -442,7 +442,7 @@ class OrcVideo
 	 * @param string $page The page executing.
 	 */
 	public function add_js( $page ) {
-        $post_type = get_post_type();
+		$post_type = get_post_type();
 		if ( 'edit.php' !== $page || 'orc_video' !== $post_type ) {
 			return;
 		}
@@ -466,21 +466,21 @@ class OrcVideo
 		$postid   = isset( $atts['postid'] ) ? $atts['postid'] : null;
 		$homepage = isset( $atts['homepage'] ) ? $atts['homepage'] : null;
 
-        $args = array(
-            'post_type'      => 'orc_video',
-            'posts_per_page' => -1,
-            'meta_query'     => array(
-                'display_order_clause' => array(
-                    'key'  => 'display_order',
-                    'type' => 'numeric',
-                ),
-            ),
-            'orderby'        => array(
-                'display_order_clause' => 'ASC',
-                'title'                => 'ASC',
-            ),
+		$args = array(
+			'post_type'      => 'orc_video',
+			'posts_per_page' => -1,
+			'meta_query'     => array(
+				'display_order_clause' => array(
+					'key'  => 'display_order',
+					'type' => 'numeric',
+				),
+			),
+			'orderby'        => array(
+				'display_order_clause' => 'ASC',
+				'title'                => 'ASC',
+			),
 
-        );
+		);
 
 		$the_query = new \WP_Query( $args );
 		$data      = array();
@@ -494,14 +494,14 @@ class OrcVideo
 				$title      = get_post( $img_id )->post_title;
 				$alt        = isset( get_post_meta( $img_id, '_wp_attachment_image_alt' )[0] ) ? get_post_meta( $img_id, '_wp_attachment_image_alt' )[0] : $title;
 				$fields     = get_post_custom( $id );
-				$data[] = array(
-					'id'          => $id,
-					'name'        => get_the_title(),
-					'url'         => $fields['url'][0],
-					'permalink'   => get_the_permalink(),
-					'img_src'     => $img_src,
-					'img_srcset'  => $img_srcset,
-					'alt'         => $alt,
+				$data[]     = array(
+					'id'         => $id,
+					'name'       => get_the_title(),
+					'url'        => $fields['url'][0],
+					'permalink'  => get_the_permalink(),
+					'img_src'    => $img_src,
+					'img_srcset' => $img_srcset,
+					'alt'        => $alt,
 				);
 			}
 		}

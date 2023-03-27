@@ -223,7 +223,7 @@ class OrcStaffMember {
 				add_post_meta( $post_id, $key, $value );
 			}
 
-			if ( ! $value ) {
+			if ( '' === $value ) {
 				// Delete the meta key if there's no value.
 				delete_post_meta( $post_id, $key );
 			}
@@ -564,7 +564,7 @@ class OrcStaffMember {
 	 * @param string $page The page executing.
 	 */
 	public function add_js( $page ) {
-        $post_type = get_post_type();
+		$post_type = get_post_type();
 		if ( 'edit.php' !== $page || 'orc_staff_member' !== $post_type ) {
 			return;
 		}

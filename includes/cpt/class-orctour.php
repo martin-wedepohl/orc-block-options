@@ -77,7 +77,7 @@ class OrcTour {
 			'show_in_rest'         => true,
 			'query_var'            => false,
 			'rewrite'              => array(
-				'slug'       => 'tour',
+				'slug'       => 'tours',
 				'with_front' => true,
 			),
 			'capability_type'      => 'post',
@@ -166,7 +166,7 @@ class OrcTour {
 				add_post_meta( $post_id, $key, $value );
 			}
 
-			if ( ! $value ) {
+			if ( '' === $value ) {
 				// Delete the meta key if there's no value.
 				delete_post_meta( $post_id, $key );
 			}

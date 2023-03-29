@@ -12,7 +12,7 @@ defined( 'ABSPATH' ) || die;
 use ORCOptions\Includes\Config;
 
 /**
- * Class for the Orchard Recovery Center Staff Members.
+ * Class for the Orchard Recovery Center Testimonials.
  */
 class OrcTestimonial {
 
@@ -523,7 +523,7 @@ class OrcTestimonial {
 		}
 
 		switch ( $column_name ) {
-			case 'city': {
+			case 'city':
 				?>
 				<div style="clear:both;">Custom Fields</div>
 				<hr style="border: 1px solid #eee;">
@@ -538,8 +538,7 @@ class OrcTestimonial {
 					</div>
 				<?php
 				break;
-			}
-			case 'province': {
+			case 'province':
 				?>
 					<div class="inline-edit-col">
 						<label>
@@ -551,8 +550,7 @@ class OrcTestimonial {
 					</div>
 				<?php
 				break;
-			}
-			case 'display_order': {
+			case 'display_order':
 				?>
 					<div class="inline-edit-col">
 						<label>
@@ -562,8 +560,7 @@ class OrcTestimonial {
 					</div>
 				<?php
 				break;
-			}
-			case 'christmas' : {
+			case 'christmas':
 				?>
 					<div class="inline-edit-col">
 						<label>
@@ -573,7 +570,6 @@ class OrcTestimonial {
 				</fieldset>
 				<?php
 				break;
-			}
 		}
 	}
 

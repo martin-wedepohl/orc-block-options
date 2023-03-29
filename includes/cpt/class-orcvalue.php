@@ -1,6 +1,6 @@
 <?php
 /**
- * Class for the Orchard Recovery Center Tours.
+ * Class for the Orchard Recovery Center Values.
  *
  * @package ORC_Block_Options
  */
@@ -12,9 +12,9 @@ defined( 'ABSPATH' ) || die;
 use ORCOptions\Includes\Config;
 
 /**
- * Class for the Orchard Recovery Center Tours.
+ * Class for the Orchard Recovery Center Values.
  */
-class OrcTour {
+class OrcValue {
 
 	/**
 	 * Class constructor
@@ -27,13 +27,13 @@ class OrcTour {
 		add_action( 'save_post', array( $this, 'save_inline' ) );
 		add_filter( 'single_template', array( $this, 'load_template' ) );
 		add_filter( 'archive_template', array( $this, 'load_archive' ) );
-		add_filter( 'manage_orc_tour_posts_columns', array( $this, 'table_head' ) );
-		add_action( 'manage_orc_tour_posts_custom_column', array( $this, 'table_content' ), 10, 2 );
-		add_filter( 'manage_edit-orc_tour_sortable_columns', array( $this, 'sortable_columns' ) );
+		add_filter( 'manage_orc_value_posts_columns', array( $this, 'table_head' ) );
+		add_action( 'manage_orc_value_posts_custom_column', array( $this, 'table_content' ), 10, 2 );
+		add_filter( 'manage_edit-orc_value_sortable_columns', array( $this, 'sortable_columns' ) );
 		add_action( 'pre_get_posts', array( $this, 'posts_orderby' ) );
 		add_action( 'quick_edit_custom_box', array( $this, 'quick_edit' ), 10, 2 );
 		add_action( 'admin_enqueue_scripts', array( $this, 'add_js' ) );
-		add_shortcode( 'orc_tour', array( $this, 'orc_tour_shortcode' ) );
+		add_shortcode( 'orc_value', array( $this, 'orc_value_shortcode' ) );
 	} // __construct
 
 	/**
@@ -42,30 +42,30 @@ class OrcTour {
 	public function register_cpt() {
 
 		$labels = array(
-			'name'                  => __( 'Tours', 'orcoptions' ),
-			'singular_name'         => __( 'Tour', 'orcoptions' ),
-			'menu_name'             => __( 'Tour', 'orcoptions' ),
-			'name_admin_bar'        => __( 'Tour', 'orcoptions' ),
+			'name'                  => __( 'Values', 'orcoptions' ),
+			'singular_name'         => __( 'Value', 'orcoptions' ),
+			'menu_name'             => __( 'Values', 'orcoptions' ),
+			'name_admin_bar'        => __( 'Values', 'orcoptions' ),
 			'add_new'               => __( 'Add New', 'orcoptions' ),
-			'add_new_item'          => __( 'Add New Tour', 'orcoptions' ),
-			'new_item'              => __( 'New Tour', 'orcoptions' ),
-			'edit_item'             => __( 'Edit Tour', 'orcoptions' ),
-			'view_item'             => __( 'View Tour', 'orcoptions' ),
-			'all_items'             => __( 'All Tours', 'orcoptions' ),
-			'search_items'          => __( 'Search Tours', 'orcoptions' ),
-			'parent_item_colon'     => __( 'Parent Tour:', 'orcoptions' ),
-			'not_found'             => __( 'No Tours found.', 'orcoptions' ),
-			'not_found_in_trash'    => __( 'No Tours found in Trash.', 'orcoptions' ),
-			'featured_image'        => __( 'Tour Image', 'orcoptions' ),
-			'set_featured_image'    => __( 'Set Tour image', 'orcoptions' ),
-			'remove_featured_image' => __( 'Remove Tour image', 'orcoptions' ),
-			'use_featured_image'    => __( 'Use as Tour image', 'orcoptions' ),
-			'archives'              => __( 'Tour archives', 'orcoptions' ),
-			'insert_into_item'      => __( 'Insert into Tour', 'orcoptions' ),
-			'uploaded_to_this_item' => __( 'Uploaded to this Tour', 'orcoptions' ),
-			'filter_items_list'     => __( 'Filter Tours list', 'orcoptions' ),
-			'items_list_navigation' => __( 'Tours list navigation', 'orcoptions' ),
-			'items_list'            => __( 'Tours list', 'orcoptions' ),
+			'add_new_item'          => __( 'Add New Value', 'orcoptions' ),
+			'new_item'              => __( 'New Value', 'orcoptions' ),
+			'edit_item'             => __( 'Edit Value', 'orcoptions' ),
+			'view_item'             => __( 'View Values', 'orcoptions' ),
+			'all_items'             => __( 'All Values', 'orcoptions' ),
+			'search_items'          => __( 'Search Values', 'orcoptions' ),
+			'parent_item_colon'     => __( 'Parent Value:', 'orcoptions' ),
+			'not_found'             => __( 'No Values found.', 'orcoptions' ),
+			'not_found_in_trash'    => __( 'No Values found in Trash.', 'orcoptions' ),
+			'featured_image'        => __( 'Value Image', 'orcoptions' ),
+			'set_featured_image'    => __( 'Set Value image', 'orcoptions' ),
+			'remove_featured_image' => __( 'Remove Value image', 'orcoptions' ),
+			'use_featured_image'    => __( 'Use as Value image', 'orcoptions' ),
+			'archives'              => __( 'Value archives', 'orcoptions' ),
+			'insert_into_item'      => __( 'Insert into Value', 'orcoptions' ),
+			'uploaded_to_this_item' => __( 'Uploaded to this Value', 'orcoptions' ),
+			'filter_items_list'     => __( 'Filter Value list', 'orcoptions' ),
+			'items_list_navigation' => __( 'Values list navigation', 'orcoptions' ),
+			'items_list'            => __( 'Values list', 'orcoptions' ),
 		);
 
 		$args = array(
@@ -77,19 +77,19 @@ class OrcTour {
 			'show_in_rest'         => true,
 			'query_var'            => false,
 			'rewrite'              => array(
-				'slug'       => 'tours',
+				'slug'       => 'values',
 				'with_front' => true,
 			),
 			'capability_type'      => 'post',
 			'has_archive'          => true,
 			'hierarchical'         => false,
 			'menu_position'        => 20,
-			'menu_icon'            => 'dashicons-multisite',
-			'supports'             => array( 'title', 'editor', 'thumbnail', 'excerpt' ),
+			'menu_icon'            => 'dashicons-visibility',
+			'supports'             => array( 'title', 'editor', 'excerpt' ),
 			'register_meta_box_cb' => array( $this, 'register_meta_box' ),
 		);
 
-		register_post_type( 'orc_tour', $args );
+		register_post_type( 'orc_value', $args );
 
 	} // register_cpt
 
@@ -98,7 +98,7 @@ class OrcTour {
 	 */
 	public function register_meta_box() {
 
-		add_meta_box( 'orc_tour_data', 'Tour Information', array( $this, 'meta_box' ), 'orc_tour', 'side', 'high' );
+		add_meta_box( 'orc_value_data', 'Value Information', array( $this, 'meta_box' ), 'orc_value', 'side', 'high' );
 
 	} // register_meta_box
 
@@ -112,9 +112,9 @@ class OrcTour {
 		global $post;
 
 		// Nonce field to validate form request from current site.
-		wp_nonce_field( basename( __FILE__ ), 'orc_tour_data' );
+		wp_nonce_field( basename( __FILE__ ), 'orc_value_data' );
 
-		// Get the tour information if it's already entered.
+		// Get the value information if it's already entered.
 		$display_order = sanitize_text_field( get_post_meta( $post->ID, 'display_order', true ) );
 
 		$display_order = '' === $display_order ? '0' : $display_order;
@@ -139,7 +139,7 @@ class OrcTour {
 		// Checks save status.
 		$is_autosave    = wp_is_post_autosave( $post_id );
 		$is_revision    = wp_is_post_revision( $post_id );
-		$is_valid_nonce = ( isset( $_POST['orc_tour_data'] ) && wp_verify_nonce( $_POST['orc_tour_data'], basename( __FILE__ ) ) ) ? true : false;
+		$is_valid_nonce = ( isset( $_POST['orc_value_data'] ) && wp_verify_nonce( $_POST['orc_value_data'], basename( __FILE__ ) ) ) ? true : false;
 		$can_edit       = current_user_can( 'edit_post', $post_id );
 
 		// Exits script depending on save status.
@@ -149,14 +149,15 @@ class OrcTour {
 
 		// Now that we're authenticated, time to save the data.
 		// This sanitizes the data from the field and saves it into an array $events_meta.
-		$tour_meta                  = array();
-		$tour_meta['display_order'] = isset( $_POST['display_order'] ) ? sanitize_text_field( $_POST['display_order'] ) : '0';
+		$value_meta                  = array();
+		$value_meta['display_order'] = isset( $_POST['display_order'] ) ? sanitize_text_field( $_POST['display_order'] ) : '0';
 
-		if ( '' === $tour_meta['display_order'] ) {
-			$tour_meta['display_order'] = '0';
+		if ( '' === $value_meta['display_order'] ) {
+			$value_meta['display_order'] = '0';
 		}
+
 		// Cycle through the $events_meta array.
-		foreach ( $tour_meta as $key => $value ) {
+		foreach ( $value_meta as $key => $value ) {
 			// Don't store custom data twice.
 			if ( get_post_meta( $post_id, $key, false ) ) {
 				// If the custom field already has a value, update it.
@@ -188,12 +189,13 @@ class OrcTour {
 		// update the display_order.
 		$display_order = ! empty( $_POST['display_order'] ) ? sanitize_text_field( $_POST['display_order'] ) : '';
 		update_post_meta( $post_id, 'display_order', $display_order );
+
 	} // save_inline
 
 	/**
 	 * Load the single post template with the following order:
-	 * - Theme single post template (THEME/plugins/orc_options/templates/single-tour.php)
-	 * - Plugin single post template (PLUGIN/templates/single-tour.php)
+	 * - Theme single post template (THEME/plugins/orc_options/templates/single-value.php)
+	 * - Plugin single post template (PLUGIN/templates/single-value.php)
 	 * - Default template
 	 *
 	 * @param string $template - Default template.
@@ -206,15 +208,15 @@ class OrcTour {
 
 		global $post;
 
-		// Check if this is a tour.
-		if ( 'orc_tour' === $post->post_type ) {
+		// Check if this is a value.
+		if ( 'orc_value' === $post->post_type ) {
 
 			// Plugin/Theme path.
 			$plugin_path = plugin_dir_path( __FILE__ ) . '../../templates/';
 			$theme_path  = get_stylesheet_directory() . '/plugins/orc_options/templates/';
 
 			// The name of custom post type single template.
-			$template_name = 'single-tour.php';
+			$template_name = 'single-value.php';
 
 			$pluginfile = $plugin_path . $template_name;
 			$themefile  = $theme_path . $template_name;
@@ -234,7 +236,7 @@ class OrcTour {
 			return $themefile;
 		}
 
-		// This is not a tour, do nothing with $template.
+		// This is not a value, do nothing with $template.
 		return $template;
 
 	} // load_template
@@ -248,14 +250,14 @@ class OrcTour {
 
 		global $post;
 
-		// Check if this is a tour.
-		if ( 'orc_tour' === $post->post_type ) {
+		// Check if this is a value.
+		if ( 'orc_value' === $post->post_type ) {
 			// Plugin/Theme path.
 			$plugin_path = plugin_dir_path( __FILE__ ) . '../../templates/';
 			$theme_path  = get_stylesheet_directory() . '/plugins/orc_options/templates/';
 
 			// The name of custom post type single template.
-			$template_name = 'archive-tour.php';
+			$template_name = 'archive-value.php';
 
 			$pluginfile = $plugin_path . $template_name;
 			$themefile  = $theme_path . $template_name;
@@ -275,7 +277,7 @@ class OrcTour {
 			return $themefile;
 		}
 
-		// This is not a tour, do nothing with $template.
+		// This is not a value, do nothing with $template.
 		return $template;
 
 	} // load_template
@@ -358,17 +360,17 @@ class OrcTour {
 			$query->set(
 				'meta_query',
 				array(
-					'tour_clause' => array(
-						'key'  => 'display_order',
-						'type' => 'numeric',
+					'value_clause' => array(
+						'key'      => 'display_order',
+						'type'     => 'numeric',
 					),
 				)
 			);
 			$query->set(
 				'orderby',
 				array(
-					'tour_clause' => $order_direction,
-					'title'       => 'ASC',
+					'value_clause' => $order_direction,
+					'title'        => 'ASC',
 				)
 			);
 		}
@@ -382,24 +384,24 @@ class OrcTour {
 	 */
 	public function quick_edit( $column_name, $post_type ) {
 
-		// Are we on the Tour page.
-		if ( 'orc_tour' !== $post_type ) {
+		// Are we on the Values page.
+		if ( 'orc_value' !== $post_type ) {
 			return;
 		}
 
 		switch ( $column_name ) {
 			case 'display_order':
 				?>
-				<div style="clear:both;">Custom Fields</div>
-				<hr style="border: 1px solid #eee;">
-				<fieldset class="inline-edit-col-left">
-					<div class="inline-edit-col">
-						<label>
-							<span>Display Order</span>
-							<input type="number" min="0" name="display_order">
-						</label>
-					</div>
-				</fieldset>
+					<div style="clear:both;">Custom Fields</div>
+					<hr style="border: 1px solid #eee;">
+					<fieldset class="inline-edit-col-left"">
+						<div class="inline-edit-col">
+							<label>
+								<span>Display Order</span>
+								<input type="number" min="0" name="display_order">
+							</label>
+						</div>
+					</fieldset>
 				<?php
 				break;
 		}
@@ -411,32 +413,35 @@ class OrcTour {
 	 * @param string $page The page executing.
 	 */
 	public function add_js( $page ) {
-		// Are we editing the tour page.
 		$post_type = get_post_type();
-		if ( 'edit.php' !== $page || 'orc_tour' !== $post_type ) {
+		if ( 'edit.php' !== $page || 'orc_value' !== $post_type ) {
 			return;
 		}
 
-		$full_path = plugins_url() . '/orc-options/dist/js/orc.tour-admin.min.js';
+		$full_path = plugins_url() . '/orc-options/dist/js/orc.value-admin.min.js';
 		$siteurl   = get_option( 'siteurl' );
 		$script    = str_replace( $siteurl, '', $full_path );
-		wp_enqueue_script( 'custom-tour-quickedit-box', $script, array( 'jquery', 'inline-edit-post' ), Config::getVersion(), true );
+		wp_enqueue_script( 'custom-quickedit-box', $script, array( 'jquery', 'inline-edit-post' ), Config::getVersion(), true );
 	}
 
 	/**
-	 * Shortcode to display the tour.
+	 * Shortcode to display the value.
 	 *
 	 * @param array  $atts     Attributes for the shortcode.
 	 * @param string $content The content for the shortcode.
 	 *
 	 * @return string HTML content result for the shortcode.
 	 */
-	public function orc_tour_shortcode( $atts, $content = null ) {
+	public function orc_value_shortcode( $atts, $content = null ) {
 
-		$postid = isset( $atts['postid'] ) ? $atts['postid'] : null;
+		$postid    = isset( $atts['postid'] ) ? $atts['postid'] : null;
 
 		$args = array(
-			'post_type'      => 'orc_tour',
+			'post_type'      => 'orc_value',
+			'orderby'        => array(
+				'display_order_clause' => 'ASC',
+				'title'                => 'ASC',
+			),
 			'posts_per_page' => -1,
 			'meta_query'     => array(
 				'display_order_clause' => array(
@@ -444,11 +449,6 @@ class OrcTour {
 					'type' => 'numeric',
 				),
 			),
-			'orderby'        => array(
-				'display_order_clause' => 'ASC',
-				'title'                => 'ASC',
-			),
-
 		);
 
 		$the_query = new \WP_Query( $args );
@@ -457,38 +457,30 @@ class OrcTour {
 			while ( $the_query->have_posts() ) {
 				$the_query->the_post();
 				$id         = get_the_ID();
-				$img_id     = get_post_thumbnail_id( $id );
-				$img_src    = wp_get_attachment_image_url( $img_id, array( 300, 300 ) );
-				$img_srcset = wp_get_attachment_image_srcset( $img_id, array( 300, 300 ) );
-				$title      = get_post( $img_id )->post_title;
-				$alt        = isset( get_post_meta( $img_id, '_wp_attachment_image_alt' )[0] ) ? get_post_meta( $img_id, '_wp_attachment_image_alt' )[0] : $title;
 				$fields     = get_post_custom( $id );
-				$data[]     = array(
-					'id'         => $id,
-					'name'       => get_the_title(),
-					'img_src'    => $img_src,
-					'img_srcset' => $img_srcset,
-					'alt'        => $alt,
+				$data[]    = array(
+					'id'        => $id,
+					'name'      => get_the_title(),
+					'permalink' => get_the_permalink(),
 				);
 			}
 		}
 		wp_reset_postdata();
 
 		if ( 0 === count( $data ) ) {
-			return '<div class="tour">No Tours</div>';
+			return '<div class="values">No Values Found</div>';
 		}
 
-		$retstr = '<div class="tours" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1em">';
-		foreach ( $data as $tour ) {
-			$retstr .= "<div class='tour' style='display: flex; flex-wrap: wrap; flex-direction: column; align-items: center; text-align: center'><a href=\"{$tour['permalink']}\">{$tour['name']}</a>";
-			$retstr .= "<figure class=\"imge-wrapper\"><img style=\"object-fit: cover;width: 100%;display: block;\" src=\"{$tour['img_src']}\"srcset=\"{$tour['img_srcset']}\"sizes=\"(min-width: 1800px) 300px,(min-width: 550px) 150px\" alt=\"{$tour['alt']}\" class=\"img\" loading=\"lazy\"></figure>";
-			$retstr .= '</div> <!-- /.tour -->';
+		$retstr = '<div class="values" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1em">';
+		foreach ( $data as $value ) {
+			$retstr .= "<div class='value' style='display: flex; flex-wrap: wrap; flex-direction: column; align-items: center; text-align: center'><a href=\"{$value['permalink']}\">{$value['name']}</a>";
+			$retstr .= '</div> <!-- /.value -->';
 		}
-		$retstr .= '</div> <!-- /.tourss -->';
+		$retstr .= '</div> <!-- /.values -->';
 
 		return $retstr;
 	}
 
-} // OrcTour
+} // OrcValue
 
-new OrcTour();
+new OrcValue();

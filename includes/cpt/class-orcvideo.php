@@ -405,7 +405,7 @@ class OrcVideo {
 		}
 
 		switch ( $column_name ) {
-			case 'url': {
+			case 'url':
 				?>
 				<div style="clear:both;">Custom Fields</div>
 				<hr style="border: 1px solid #eee;">
@@ -420,8 +420,7 @@ class OrcVideo {
 					</div>
 				<?php
 				break;
-			}
-			case 'display_order': {
+			case 'display_order':
 				?>
 					<div class="inline-edit-col">
 						<label>
@@ -432,7 +431,6 @@ class OrcVideo {
 				</fieldset>
 				<?php
 				break;
-			}
 		}
 	}
 

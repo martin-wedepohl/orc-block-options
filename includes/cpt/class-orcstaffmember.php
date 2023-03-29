@@ -498,17 +498,17 @@ class OrcStaffMember {
 	 */
 	public function quick_edit( $column_name, $post_type ) {
 
-        // Are we on the Staff Members page.
-        if ( 'orc_staff_member' !== $post_type ) {
-            return;
-        }
+		// Are we on the Staff Members page.
+		if ( 'orc_staff_member' !== $post_type ) {
+			return;
+		}
 
 		switch ( $column_name ) {
-			case 'position': {
+			case 'position':
 				?>
-                <div style="clear:both;">Custom Fields</div>
-                <hr style="border: 1px solid #eee;">
-                <fieldset class="inline-edit-col-left" style="clear:both;">
+				<div style="clear:both;">Custom Fields</div>
+				<hr style="border: 1px solid #eee;">
+				<fieldset class="inline-edit-col-left" style="clear:both;">
 					<div class="inline-edit-col">
 						<label>
 							<span class="title">Position</span>
@@ -519,8 +519,7 @@ class OrcStaffMember {
 					</div>
 				<?php
 				break;
-			}
-			case 'qualifications': {
+			case 'qualifications':
 				?>
 					<div class="inline-edit-col">
 						<label>
@@ -532,8 +531,7 @@ class OrcStaffMember {
 					</div>
 				<?php
 				break;
-			}
-			case 'display_order': {
+			case 'display_order':
 				?>
 					<div class="inline-edit-col">
 						<label>
@@ -543,8 +541,7 @@ class OrcStaffMember {
 					</div>
 				<?php
 				break;
-			}
-			case 'on_home_page' : {
+			case 'on_home_page':
 				?>
 					<div class="inline-edit-col">
 						<label>
@@ -554,7 +551,6 @@ class OrcStaffMember {
 				</fieldset>
 				<?php
 				break;
-			}
 		}
 	}
 
@@ -572,7 +568,7 @@ class OrcStaffMember {
 		$full_path = plugins_url() . '/orc-options/dist/js/orc.staff-admin.min.js';
 		$siteurl   = get_option( 'siteurl' );
 		$script    = str_replace( $siteurl, '', $full_path );
-		wp_enqueue_script( 'custom-quickedit-box', $script, array( 'jquery', 'inline-edit-post' ), Config::getVersion(), true );
+		wp_enqueue_script( 'custom-staff-member-quickedit-box', $script, array( 'jquery', 'inline-edit-post' ), Config::getVersion(), true );
 	}
 
 	/**
